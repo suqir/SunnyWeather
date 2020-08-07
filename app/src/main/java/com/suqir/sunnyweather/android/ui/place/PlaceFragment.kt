@@ -12,6 +12,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suqir.sunnyweather.android.R
+import com.suqir.sunnyweather.android.ui.weather.WeatherActivity
 import kotlinx.android.synthetic.main.fragment_place.*
 
 class PlaceFragment : Fragment() {
@@ -28,6 +29,17 @@ class PlaceFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        if (viewModel.isPlaceSaved()) {
+            val place = viewModel.getSavedPlace()
+            WeatherActivity.startAction(
+                requireActivity(),
+                place.location.lng,
+                place.location.lat,
+                place.name
+            )
+            requireActivity().finish()
+            return
+        }
         val layoutManager = LinearLayoutManager(activity)
         recyclerview.layoutManager = layoutManager
         adapter = PlaceAdapter(this, viewModel.placeList)
@@ -43,7 +55,7 @@ class PlaceFragment : Fragment() {
                 adapter.notifyDataSetChanged()
             }
         }
-        viewModel.placeLiveData.observe(this, Observer { result ->
+        viewModel.placeLiveData.observe(viewLifecycleOwner, Observer { result ->
             val places = result.getOrNull()
             if (places != null) {
                 recyclerview.visibility = View.VISIBLE
